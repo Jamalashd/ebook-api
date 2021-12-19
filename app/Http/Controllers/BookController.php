@@ -14,12 +14,11 @@ class BookController extends Controller
      */
     public function index()
     {
-        return [
-            "status" => "200",
-            "message" => "Load data success",
-            "data" => Book::all()
-        ];
-        //
+        $book = Book::get();
+        return response()->json([
+            'status' => 200,
+            'data' => $book
+        ], 200);
     }
 
     /**
@@ -40,21 +39,26 @@ class BookController extends Controller
      */
     public function store(Request $request)
     {
-        $data = Book::create([
-            "id"=> $request->id,
-            "title"=> $request->title,
-            "description"=> $request->description,
-            "author"=> $request->author,
-            "publisher"=> $request->publisher,
-            "date_of_issue"=> $request->date_of_issue,
-        ]);
-
-        return [
-            "status" => "201",
-            "message" => "Create data success",
-            "data" => $data
-        ];
-        //
+        $book = new Book();
+        $book->title = $request->title;
+        $book->description = $request->description;
+        $book->author = $request->author;
+        $book->publisher = $request->publisher;
+        $book->date_of_issue = $request->date_of_issue;
+        $book->save();
+        if($book->save()){
+            return response()->json([
+                'status' => 201,
+                'message' => 'Data Berhasil Di Simpan!',
+                'data' => $book
+            ], 201);
+        }
+        else{
+            return response()->json([
+                'status' => 400,
+                'message' => 'Data Belum Tersimpan!'
+            ], 400);
+        }
     }
 
     /**
@@ -65,24 +69,21 @@ class BookController extends Controller
      */
     public function show($id)
     {
-        $data = Book::find($id);
-        if($data){
-
-            return [
-                "status" => "200",
-                "message" => "Show Data Detail Success",
-                "data" => $data
-            ];
-
-        }else{
-
-            return [
-                "status" => "201",
-                "message" => "Data Not Found",
-            ];
-
+        // return Book::find($id);
+        $book = Book::find($id);
+        if($book){
+            return response()->json([
+                'status' => 200,
+                'message' => 'Data berhasil ditemukan!',
+                'data' => $book
+            ], 200);
         }
-        //
+        else{
+            return response()->json([
+                'status' => 404,
+                'message' => 'Id ' . $id . ' tidak ditemukan!'
+            ], 404);
+        }
     }
 
     /**
@@ -105,19 +106,26 @@ class BookController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $data = Book::find($id);
-
-        $data -> title = $request->title;
-        $data -> description= $request->description;
-        $data -> author = $request->author;
-        $data -> publisher = $request->publisher;
-        $data -> date_of_issue = $request->date_of_issue;
-
-        $data->save();
-
-        return "Update Data Succsess";
-
-        //
+        $book = Book::find($id);
+        if($book){
+            $book->title = $request->title ? $request->title : $book->title;
+            $book->description = $request->description ? $request->description : $book->description;
+            $book->author = $request->author ? $request->author : $book->author;
+            $book->publisher = $request->publisher ? $request->publisher : $book->publisher;
+            $book->date_of_issue = $request->date_of_issue ? $request->date_of_issue : $book->date_of_issue;
+            $book->save();
+            return response()->json([
+                'status' => 200,
+                'message' => 'Data berhasil diubah!',
+                'data' => $book
+            ], 200);
+        }
+        else{
+            return response()->json([
+                'status' => 404,
+                'message' => 'Id ' . $id . ' tidak ditemukan!'
+            ], 404);
+        }
     }
 
     /**
@@ -128,20 +136,20 @@ class BookController extends Controller
      */
     public function destroy($id)
     {
-        $data = Book::find($id);
-
-        if($data){
-            $data->delete();
-            return[
-                "status" => "204",
-                "message" => "Remove success"
-            ];
-        }else{
-            return[
-                "status" => "404",
-                "message" => "Data not found"
-            ];
+        // Book::destroy($id);
+        $book = Book::find($id);
+        if($book){
+            $book->delete();
+            return response()->json([
+                'status' => 200,
+                'message' => 'Data Id ' . $id . ' Berhasil dihapus!'
+            ], 200);
         }
-        //
+        else{
+            return response()->json([
+                'status' => 404,
+                'message' => 'Id ' . $id . ' tidak ditemukan!'
+            ], 404);
+        }
     }
 }
